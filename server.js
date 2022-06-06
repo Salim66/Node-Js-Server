@@ -57,7 +57,18 @@ http.createServer((req, res) => {
         });
 
         res.end(JSON.stringify({
-            message : 'I am form Student Post'
+            message : 'Student data added successfully'
+        }));
+
+    }else if(req.url.match(/\/api\/students\/[0-9]{1,}/) && req.method == 'DELETE'){
+
+        let id = req.url.split('/')[3];
+
+        let deleted_data = students_obj.filter( stu => stu.id != id );
+        writeFileSync('./data/students.json', JSON.stringify(deleted_data));
+
+        res.end(JSON.stringify({
+            message : 'Student data deleted successfully'
         }));
 
     }else {
