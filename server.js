@@ -64,12 +64,58 @@ http.createServer((req, res) => {
 
         let id = req.url.split('/')[3];
 
-        let deleted_data = students_obj.filter( stu => stu.id != id );
-        writeFileSync('./data/students.json', JSON.stringify(deleted_data));
+        if(students_obj.some( stu => stu.id == id )){
+            let deleted_data = students_obj.filter( stu => stu.id != id );
+            writeFileSync('./data/students.json', JSON.stringify(deleted_data));
+    
+            res.end(JSON.stringify({
+                message : 'Student data deleted successfully'
+            }));
+        }else {
+            res.end(JSON.stringify({
+                message : 'Student data not found!'
+            }));
+        }
 
-        res.end(JSON.stringify({
-            message : 'Student data deleted successfully'
-        }));
+       
+
+    }else if(req.url.match(/\/api\/students\/[0-9]{1,}/) && req.method == 'PUT' || req.url.match(/\/api\/students\/[0-9]{1,}/) && req.method == 'PATCH'){
+
+        let id = req.url.split('/')[3];
+
+        if(students_obj.some( stu => stu.id == id )){
+
+            
+            let data = '';
+            req.on('data', (chunk) => {
+
+                data += chunk.toString();
+
+            });
+            req.on('end', () => {
+                let updated_data = JSON.parse(data);
+
+                students_obj[students_obj.findIndex( stu => stu.id == id )] = {
+                    id : id,
+                    name : updated_data.name,
+                    skill : updated_data.skill,
+                    age : updated_data.age,
+                    location : updated_data.location,
+                };
+
+                writeFileSync('./data/students.json', JSON.stringify(students_obj));
+    
+            });
+
+            res.end(JSON.stringify({
+                message : 'Student data updated successfully'
+            }));
+            
+        }else {
+            res.end(JSON.stringify({
+                message : 'Student data not found!'
+            }));
+        }
 
     }else {
         res.end(JSON.stringify({
